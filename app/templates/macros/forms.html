@@ -1,0 +1,68 @@
+<!-- macros/forms.html -->
+{% macro render_field(field, label_class='col-sm-2', field_class='col-sm-10', disabled=False) %}
+    <div class="form-group row{% if field.errors %} has-error{% endif %}">
+        {{ field.label(class='col-form-label ' + label_class) }}
+        <div class="{{ field_class }}">
+             {# Добавляем атрибут disabled если нужно #}
+            {{ field(class='form-control' + (' is-invalid' if field.errors else ''), disabled=disabled) }}
+            {% if field.errors %}
+                {% for error in field.errors %}
+                    <div class="invalid-feedback">{{ error }}</div>
+                {% endfor %}
+            {% endif %}
+             {# Показываем текущее значение роли, если поле отключено #}
+             {% if disabled and field.object_data %} 
+                  {% set role = None %}
+                  {% if field.object_data %}
+                       {% set role = field.choices | selectattr(0, 'equalto', field.object_data) | map(attribute=1) | first %}
+                  {% endif %}
+                  <small class="form-text text-muted">Текущая роль: {{ role if role else 'Не назначена' }} (нельзя изменить)</small>
+             {% endif %}
+        </div>
+    </div>
+{% endmacro %}
+
+{# Макрос для формы СОЗДАНИЯ пользователя #}
+{% macro render_user_form_create(form, action_url, submit_text='Создать') %}
+    <form method="POST" action="{{ action_url }}">
+        {{ form.hidden_tag() }}
+        
+        {{ render_field(form.username) }}
+        {{ render_field(form.password) }}
+        {{ render_field(form.last_name) }}
+        {{ render_field(form.first_name) }}
+        {{ render_field(form.middle_name) }}
+        {{ render_field(form.role) }} {# Роль всегда активна при создании #}
+        
+        <div class="form-group row">
+            <div class="col-sm-10 offset-sm-2">
+                <button type="submit" class="btn btn-primary">{{ submit_text }}</button>
+                <a href="{{ url_for('views.index') }}" class="btn btn-secondary">Отмена</a>
+            </div>
+        </div>
+    </form>
+{% endmacro %}
+
+{# Макрос для формы РЕДАКТИРОВАНИЯ пользователя #}
+{% macro render_user_form_edit(form, action_url, submit_text='Сохранить', is_editing_self_as_user=False) %}
+    <form method="POST" action="{{ action_url }}">
+        {{ form.hidden_tag() }}
+        
+        {# Логин не редактируем #}
+        {# Пароль меняется отдельно #}
+        
+        {{ render_field(form.last_name) }}
+        {{ render_field(form.first_name) }}
+        {{ render_field(form.middle_name) }}
+        
+        {# Поле роли: отключаем для пользователя, редактирующего себя #}
+        {{ render_field(form.role, disabled=is_editing_self_as_user) }}
+        
+        <div class="form-group row">
+            <div class="col-sm-10 offset-sm-2">
+                <button type="submit" class="btn btn-primary">{{ submit_text }}</button>
+                <a href="{{ url_for('views.user_view', id=request.view_args['id']) if 'id' in request.view_args else url_for('views.index') }}" class="btn btn-secondary">Отмена</a> {# Вернуться к просмотру или на главную #}
+            </div>
+        </div>
+    </form>
+{% endmacro %}

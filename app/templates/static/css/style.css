@@ -1,0 +1,24 @@
+/* style.css */
+.has-error .form-control {
+    border-color: #dc3545;
+}
+
+.has-error .help-block {
+    color: #dc3545;
+}
+
+.table-actions {
+    white-space: nowrap;
+}
+
+.btn-sm {
+    margin-right: 5px;
+}
+
+.navbar {
+    margin-bottom: 20px;
+}
+
+.alert {
+    margin-top: 20px;
+}

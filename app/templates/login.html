@@ -1,0 +1,40 @@
+<!-- # login.html -->
+{% extends 'base.html' %}
+
+{% block title %}Вход в систему{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-6 offset-md-3">
+        <h1>Вход в систему</h1>
+        <form method="POST" action="{{ url_for('views.login') }}">
+            {{ form.hidden_tag() }}
+            <div class="form-group">
+                {{ form.username.label }}
+                {{ form.username(class="form-control" + (" is-invalid" if form.username.errors else "")) }}
+                {% if form.username.errors %}
+                    {% for error in form.username.errors %}
+                        <div class="invalid-feedback">{{ error }}</div>
+                    {% endfor %}
+                {% endif %}
+            </div>
+            <div class="form-group">
+                {{ form.password.label }}
+                {{ form.password(class="form-control" + (" is-invalid" if form.password.errors else "")) }}
+                {% if form.password.errors %}
+                    {% for error in form.password.errors %}
+                        <div class="invalid-feedback">{{ error }}</div>
+                    {% endfor %}
+                {% endif %}
+            </div>
+            <button type="submit" class="btn btn-primary">Войти</button>
+        </form>
+        <div class="alert alert-info mt-4">
+            <h5>Для первого входа используйте:</h5>
+            <p>Логин: <strong>admin</strong><br>
+            Пароль: <strong>Admin123!</strong></p>
+            <p class="mb-0">После входа в систему рекомендуется изменить пароль администратора.</p>
+        </div>
+    </div>
+</div>
+{% endblock %}

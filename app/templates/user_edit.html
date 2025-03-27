@@ -1,0 +1,19 @@
+<!-- # user_edit.html -->
+{% extends 'base.html' %}
+{% from 'macros/forms.html' import render_user_form_edit %} {# Используем макрос для редактирования #}
+
+{% block title %}Редактирование пользователя{% endblock %}
+
+{% block content %}
+<h1>Редактирование пользователя: {{ user.full_name() }}</h1>
+
+{# Передаем флаг is_editing_self_as_user в макрос #}
+{{ render_user_form_edit(form, url_for('views.user_edit', id=user.id), 'Сохранить', is_editing_self_as_user) }}
+
+{% if is_editing_self_as_user %}
+<div class="alert alert-info mt-3">
+    Вы не можете изменить свою роль.
+</div>
+{% endif %}
+
+{% endblock %}

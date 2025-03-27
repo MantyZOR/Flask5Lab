@@ -1,0 +1,11 @@
+<!-- # user_create.html -->
+{% extends 'base.html' %}
+{% from 'macros/forms.html' import render_user_form_create %} {# Используем макрос для создания #}
+
+{% block title %}Создание пользователя{% endblock %}
+
+{% block content %}
+<h1>Создание нового пользователя</h1>
+
+{{ render_user_form_create(form, url_for('views.user_create'), 'Создать') }}
+{% endblock %}

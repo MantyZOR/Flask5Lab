@@ -1,0 +1,100 @@
+<!-- # index.html -->
+{% extends 'base.html' %}
+
+{% block content %}
+<h1>Список пользователей</h1>
+{% if current_user.is_authenticated and current_user.is_admin() %}
+    <p>Вы вошли как администратор и видите всех пользователей.</p>
+{% elif current_user.is_authenticated %}
+    <p>Вы вошли как обычный пользователь.</p>
+{% else %}
+     <p><a href="{{ url_for('views.login') }}">Войдите</a>, чтобы увидеть список пользователей.</p>
+{% endif %}
+
+{% if users %} {# Показываем таблицу только если есть пользователи для отображения #}
+<div class="table-responsive">
+    <table class="table table-striped table-hover">
+        <thead>
+            <tr>
+                <th>#</th>
+                <th>ФИО</th>
+                <th>Логин</th> {# Добавим логин для ясности #}
+                <th>Роль</th>
+                <th>Действия</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for user in users %}
+            <tr>
+                <td>{{ loop.index }}</td>
+                <td>
+                    <a href="{{ url_for('views.user_view', id=user.id) }}">{{ user.full_name() }}</a>
+                </td>
+                <td>{{ user.username }}</td>
+                <td>{{ user.role.name if user.role else 'Не назначена' }}</td>
+                <td>
+                    <!-- Кнопка Просмотр доступна всем аутентифицированным для тех, кого они видят -->
+                    <a href="{{ url_for('views.user_view', id=user.id) }}" class="btn btn-sm btn-info">Просмотр</a>
+
+                    <!-- Кнопка Редактирование: Админ видит для всех, Пользователь только для себя -->
+                    {% if current_user.is_authenticated %}
+                        {% if current_user.is_admin() or current_user.id == user.id %}
+                        <a href="{{ url_for('views.user_edit', id=user.id) }}" class="btn btn-sm btn-primary">Редактирование</a>
+                        {% endif %}
+                    {% endif %}
+                    
+                    <!-- Кнопка Удаление: Только Админ и не для себя -->
+                    {% if current_user.is_authenticated and current_user.is_admin() and current_user.id != user.id %}
+                    <button class="btn btn-sm btn-danger delete-user" data-toggle="modal" data-target="#deleteModal"
+                            data-id="{{ user.id }}" data-name="{{ user.full_name() }}">Удаление</button>
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% elif current_user.is_authenticated %}
+    <p>Нет пользователей для отображения.</p>
+{% endif %}
+
+
+<!-- Кнопка Создание: Только Админ -->
+{% if current_user.is_authenticated and current_user.is_admin() %}
+<a href="{{ url_for('views.user_create') }}" class="btn btn-success mt-3">Создать пользователя</a>
+{% endif %}
+
+<!-- Модальное окно для подтверждения удаления -->
+<div class="modal fade" id="deleteModal" tabindex="-1" role="dialog" aria-labelledby="deleteModalLabel" aria-hidden="true">
+    <!-- ... (содержимое модального окна без изменений) ... -->
+        <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-dismiss="modal">Отмена</button> {# Изменили текст кнопки #}
+            <form id="deleteForm" method="POST" style="display: inline;"> {# Убрали action отсюда, он будет задан через JS #}
+                <button type="submit" class="btn btn-danger">Удалить</button> {# Изменили текст кнопки #}
+            </form>
+        </div>
+    </div>
+</div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+{{ super() }} {# Включаем скрипты из базового шаблона, если они там есть #}
+<script>
+    $(document).ready(function() {
+        // Используем событие 'show.bs.modal' для установки action формы перед показом окна
+        $('#deleteModal').on('show.bs.modal', function (event) {
+            var button = $(event.relatedTarget); // Кнопка, которая вызвала модальное окно
+            var userId = button.data('id');
+            var userName = button.data('name');
+            
+            var modal = $(this);
+            modal.find('.modal-body #userName').text(userName); // Обновляем имя пользователя в тексте
+            
+            // Устанавливаем action для формы внутри модального окна
+            var deleteUrl = "{{ url_for('views.user_delete', id=0) }}".replace('0', userId); // Генерируем URL динамически
+            modal.find('#deleteForm').attr('action', deleteUrl);
+        });
+    });
+</script>
+{% endblock %}
